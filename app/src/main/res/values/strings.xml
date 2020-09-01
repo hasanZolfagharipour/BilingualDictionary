@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Dictionary</string>
+
+    <string name="language">Language</string>
+    <string name="share">Share</string>
+    <string name="exit">Exit</string>
+</resources>

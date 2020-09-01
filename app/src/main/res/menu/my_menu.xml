@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item
+        android:id="@+id/menuSearch"
+        android:icon="@drawable/ic_search"
+        app:showAsAction="always|collapseActionView"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        android:title="Search" />
+
+    <item
+        android:title="More"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_more">
+
+        <menu>
+            <item
+                android:title="@string/language"
+                android:id="@+id/menuLanguage"
+                android:icon="@drawable/ic_language"
+                app:showAsAction="never"/>
+
+            <item
+                android:title="@string/share"
+                android:id="@+id/menuShare"
+                android:icon="@drawable/ic_share"
+                app:showAsAction="never"/>
+            <item
+                android:title="@string/exit"
+                android:id="@+id/menuExit"
+                android:icon="@drawable/ic_exit"
+                app:showAsAction="never"/>
+
+        </menu>
+
+
+    </item>
+
+
+</menu>
