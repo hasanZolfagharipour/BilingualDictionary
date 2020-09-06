@@ -4,33 +4,25 @@
 
 
     <item
-        android:id="@+id/menuSearch"
-        android:icon="@drawable/ic_search"
-        app:showAsAction="always|collapseActionView"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
-        android:title="Search" />
-
-    <item
-        android:title="More"
+        android:title="@string/more"
         app:showAsAction="always"
+        android:iconTint="@color/white"
         android:icon="@drawable/ic_more">
+
 
         <menu>
             <item
                 android:title="@string/language"
                 android:id="@+id/menuLanguage"
-                android:icon="@drawable/ic_language"
                 app:showAsAction="never"/>
 
             <item
                 android:title="@string/share"
                 android:id="@+id/menuShare"
-                android:icon="@drawable/ic_share"
                 app:showAsAction="never"/>
             <item
                 android:title="@string/exit"
                 android:id="@+id/menuExit"
-                android:icon="@drawable/ic_exit"
                 app:showAsAction="never"/>
 
         </menu>

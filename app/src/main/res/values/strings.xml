@@ -4,4 +4,24 @@
     <string name="language">Language</string>
     <string name="share">Share</string>
     <string name="exit">Exit</string>
+    <string name="choose">Choose Language</string>
+    <string name="persian">Persian</string>
+    <string name="english">English</string>
+    <string name="more">More</string>
+    <string name="search">Search</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="word">word</string>
+    <string name="definition">Definition</string>
+    <string name="new_word">New word</string>
+    <string name="english_char">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
+    <string name="just_english">Just English</string>
+    <string name="just_persian">Just Persian</string>
+    <string name="word_empty">Word box should be fill</string>
+    <string name="definition_empty">Definition box should be fill</string>
+    <string name="word_successfully_added">Word successfully added.</string>
+    <string name="delete">Delete</string>
+    <string name="sure_to_delete_item">Are you sure to delete item?</string>
+    <string name="delete_item">Delete Item</string>
+    <string name="edit_word">Edit Word</string>
 </resources>
