@@ -24,4 +24,7 @@
     <string name="sure_to_delete_item">Are you sure to delete item?</string>
     <string name="delete_item">Delete Item</string>
     <string name="edit_word">Edit Word</string>
+    <string name="fa">FA</string>
+    <string name="en">EN</string>
+    <string name="add_word">Add Word</string>
 </resources>

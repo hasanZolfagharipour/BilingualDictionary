@@ -9,17 +9,17 @@
         android:iconTint="@color/white"
         android:icon="@drawable/ic_more">
 
-
         <menu>
+            <item
+                android:title="@string/add_word"
+                android:id="@+id/menuAddWord"
+                app:showAsAction="never"/>
+
             <item
                 android:title="@string/language"
                 android:id="@+id/menuLanguage"
                 app:showAsAction="never"/>
 
-            <item
-                android:title="@string/share"
-                android:id="@+id/menuShare"
-                app:showAsAction="never"/>
             <item
                 android:title="@string/exit"
                 android:id="@+id/menuExit"
@@ -29,6 +29,7 @@
 
 
     </item>
+
 
 
 </menu>
