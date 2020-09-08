@@ -27,4 +27,11 @@
     <string name="fa">FA</string>
     <string name="en">EN</string>
     <string name="add_word">Add Word</string>
+    <string name="copy_database">Copy Database</string>
+    <string name="import_question">Do you want to import \'Database\'?</string>
+    <string name="loading">Loading</string>
+    <string name="database_manager">Database Manager</string>
+    <string name="reset">Reset</string>
+    <string name="remove_database">Remove Database</string>
+    <string name="sure_delete_reset">Are you sure to %s the database?</string>
 </resources>

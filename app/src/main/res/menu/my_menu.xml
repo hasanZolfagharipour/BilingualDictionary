@@ -21,6 +21,23 @@
                 app:showAsAction="never"/>
 
             <item
+                android:title="@string/database_manager"
+                android:id="@+id/menuDatabaseManager"
+                app:showAsAction="never">
+
+                <menu>
+                    <item
+                        android:title="@string/reset"
+                        android:id="@+id/menuReset"
+                        app:showAsAction="never"/>
+                    <item
+                        android:title="@string/remove_database"
+                        android:id="@+id/menuRemoveDatabase"
+                        app:showAsAction="never"/>
+                </menu>
+            </item>
+
+            <item
                 android:title="@string/exit"
                 android:id="@+id/menuExit"
                 app:showAsAction="never"/>

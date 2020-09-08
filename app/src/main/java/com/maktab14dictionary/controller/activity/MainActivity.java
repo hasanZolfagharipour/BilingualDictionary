@@ -1,4 +1,4 @@
-package com.maktab14dictionary.controller;
+package com.maktab14dictionary.controller.activity;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -12,6 +12,7 @@ import com.zeugmasolutions.localehelper.LocaleHelperActivityDelegateImpl;
 import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
+import pl.com.salsoft.sqlitestudioremote.SQLiteStudioService;
 
 public class MainActivity extends AppCompatActivity implements WordListFragment.OnWordListListener {
 
@@ -23,13 +24,19 @@ public class MainActivity extends AppCompatActivity implements WordListFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         mDelegate.onCreate(this);
+        SQLiteStudioService.instance().start(this);
 
         if (getSupportFragmentManager().findFragmentById(R.id.fragmentWordListContainer) == null)
             getSupportFragmentManager().beginTransaction().add(R.id.fragmentWordListContainer, WordListFragment.newInstance()).commit();
     }
 
-
+    @Override
+    protected void onDestroy() {
+        SQLiteStudioService.instance().stop();
+        super.onDestroy();
+    }
 
     @Override
     protected void attachBaseContext(Context newBase) {

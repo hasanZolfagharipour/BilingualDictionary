@@ -61,6 +61,18 @@
     </androidx.appcompat.widget.Toolbar>
 
 
+    <ImageView
+        android:id="@+id/imgEmptyList"
+        android:layout_width="250dp"
+        android:layout_height="300dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_add_blue"
+        android:visibility="visible"
+        android:alpha="0.7"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/toolbar2"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/wordListRecyclerView"
