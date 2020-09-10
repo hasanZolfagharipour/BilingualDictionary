@@ -1,82 +1,85 @@
 package com.maktab14dictionary.controller.activity;
 
 import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 
 import com.maktab14dictionary.R;
 import com.maktab14dictionary.controller.fragments.WordListFragment;
-import com.zeugmasolutions.localehelper.LocaleHelperActivityDelegateImpl;
 
 import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
-import pl.com.salsoft.sqlitestudioremote.SQLiteStudioService;
+import androidx.preference.PreferenceManager;
 
 public class MainActivity extends AppCompatActivity implements WordListFragment.OnWordListListener {
 
-    private LocaleHelperActivityDelegateImpl mDelegate = new LocaleHelperActivityDelegateImpl();
+    public static final String SHARED_PREFERENCE_CURRENT_LANGUAGE = "SharedPreferenceCurrentLanguage";
 
+    private SharedPreferences mPreferences;
+    private String mCurrentLanguage = "en";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-        mDelegate.onCreate(this);
-        SQLiteStudioService.instance().start(this);
-
         if (getSupportFragmentManager().findFragmentById(R.id.fragmentWordListContainer) == null)
-            getSupportFragmentManager().beginTransaction().add(R.id.fragmentWordListContainer, WordListFragment.newInstance()).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentWordListContainer, WordListFragment.newInstance()).commit();
     }
-
-    @Override
-    protected void onDestroy() {
-        SQLiteStudioService.instance().stop();
-        super.onDestroy();
-    }
-
-    @Override
-    protected void attachBaseContext(Context newBase) {
-        super.attachBaseContext(mDelegate.attachBaseContext(newBase));
-    }
-
-    @Override
-    public void applyOverrideConfiguration(Configuration overrideConfiguration) {
-        super.applyOverrideConfiguration(mDelegate.applyOverrideConfiguration(getBaseContext(), overrideConfiguration));
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        mDelegate.onResumed(this);
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        mDelegate.onPaused();
-    }
-
-    @Override
-    public Resources getResources() {
-        return mDelegate.getResources(super.getResources());
-    }
-
-    private void updateLocale(String lang) {
-        mDelegate.setLocale(this, new Locale(lang));
-    }
-
 
     @Override
     public void onChangeLanguage(String lang) {
-        updateLocale(lang);
+        mCurrentLanguage = lang;
+        mPreferences.edit().putString(SHARED_PREFERENCE_CURRENT_LANGUAGE, mCurrentLanguage).apply();
+        recreate();
     }
 
     @Override
     public void finished() {
         finish();
+    }
+
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(newBase);
+        mCurrentLanguage = mPreferences.getString(SHARED_PREFERENCE_CURRENT_LANGUAGE, mCurrentLanguage);
+        Context context = changeLanguage(newBase, mCurrentLanguage);
+        super.attachBaseContext(context);
+    }
+
+    public static ContextWrapper changeLanguage(Context context, String lang) {
+        Locale currentLocal;
+        Resources res  = context.getResources();
+        Configuration conf = res.getConfiguration();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            currentLocal = conf.getLocales().get(0);
+        } else {
+            currentLocal = conf.locale;
+        }
+
+        if (!lang.equals("") && !currentLocal.getLanguage().equals(lang)) {
+            Locale newLocal = new Locale(lang);
+            Locale.setDefault(newLocal);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                conf.setLocale(newLocal);
+            } else {
+                conf.locale = newLocal;
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                context = context.createConfigurationContext(conf);
+            } else {
+                res.updateConfiguration(conf, context.getResources().getDisplayMetrics());
+            }
+        }
+
+        return new ContextWrapper(context);
     }
 }

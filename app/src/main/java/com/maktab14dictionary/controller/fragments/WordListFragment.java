@@ -1,10 +1,12 @@
 package com.maktab14dictionary.controller.fragments;
 
 import android.animation.Animator;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,9 +31,7 @@ import com.maktab14dictionary.controller.fragments.dialog.WordDialogFragment;
 import com.maktab14dictionary.enums.WordState;
 import com.maktab14dictionary.model.Word;
 import com.maktab14dictionary.repositiory.DictionaryRepository;
-import com.maktab14dictionary.utils.Globals;
 
-import java.util.Objects;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +39,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -60,14 +61,15 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
     public static final String TAG = "tag";
     public static final String BUNDLE_BOOLEAN_IS_EN = "BundleBooleanIsEn";
 
-    private ImageView mImageViewFlag;
+
     private Toolbar mToolbar;
     private RecyclerView mRecyclerView;
     private SearchView mSearchView;
     private EditText mEditTextSearch;
     private ImageView mImageViewEmptyList;
 
-    private MainActivity mActivity;
+
+    private SharedPreferences mPreferences;
     private DictionaryAdapter mAdapter;
     private OnWordListListener mOnWordListListener;
     private DictionaryRepository mRepository;
@@ -76,15 +78,13 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
     private int mPosition;
     private boolean mBooleanIsEn = true;
 
-
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mActivity = (MainActivity) getActivity();
-        mLanguageState = Globals.getSavedState(mActivity, SHARED_PREFERENCES_LANGUAGE_SELECTED_DIALOG);
-        mRepository = DictionaryRepository.getInstance(mActivity);
+
+        mPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mLanguageState = mPreferences.getInt(SHARED_PREFERENCES_LANGUAGE_SELECTED_DIALOG, 0);
+        mRepository = DictionaryRepository.getInstance(getActivity());
 
         onConfiguration(savedInstanceState);
     }
@@ -96,8 +96,6 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
         findViews(view);
 
         setToolbar();
-
-        setFlag(mBooleanIsEn);
 
         setListener();
 
@@ -112,7 +110,7 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
 
     private void findViews(View view) {
         mToolbar = view.findViewById(R.id.toolbar);
-        mImageViewFlag = view.findViewById(R.id.imgFlag);
+
         mImageViewEmptyList = view.findViewById(R.id.imgEmptyList);
         mSearchView = view.findViewById(R.id.search);
         mEditTextSearch = mSearchView.findViewById(R.id.search_src_text);
@@ -122,8 +120,9 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
 
     private void setToolbar() {
         setHasOptionsMenu(true);
-        mActivity.setSupportActionBar(mToolbar);
-        Objects.requireNonNull(mActivity.getSupportActionBar()).setTitle(R.string.app_name);
+
+        ((MainActivity) getActivity()).setSupportActionBar(mToolbar);
+        ((MainActivity) getActivity()).getSupportActionBar().setTitle(R.string.app_name);
     }
 
     private void setAdapter() {
@@ -140,15 +139,17 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
     }
 
     private void copyDialog() {
-        if (!Globals.isDatabaseCopied(mActivity, SHARED_PREFERENCE_BOOLEAN_IS_DATABASE_COPIED)) {
-            Globals.setBooleanIsDatabaseCopied(mActivity, SHARED_PREFERENCE_BOOLEAN_IS_DATABASE_COPIED, true);
+
+        if (!mPreferences.getBoolean(SHARED_PREFERENCE_BOOLEAN_IS_DATABASE_COPIED, false)){
+            mPreferences.edit().putBoolean(SHARED_PREFERENCE_BOOLEAN_IS_DATABASE_COPIED, true).apply();
             showQuestionDialog();
+
         }
     }
 
     private void showQuestionDialog() {
 
-        new AlertDialog.Builder(mActivity)
+        new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.copy_database)
                 .setMessage(R.string.import_question)
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -162,12 +163,13 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
 
     }
 
+    @SuppressLint("ResourceType")
     private void showLoadingDialog() {
 
-        AlertDialog.Builder loadingBuilder = new AlertDialog.Builder(mActivity);
-        View view = LayoutInflater.from(mActivity).inflate(R.layout.loading_layout, null);
+        AlertDialog.Builder loadingBuilder = new AlertDialog.Builder(getActivity());
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.loading_layout, null);
         final LottieAnimationView lottie = view.findViewById(R.id.loadingLottie);
-
+        lottie.setAnimation(R.raw.load_import);
 
         loadingBuilder.setTitle(R.string.loading).setView(view);
 
@@ -203,8 +205,50 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
         });
     }
 
+    private void showDeletingDialog(){
+
+        AlertDialog.Builder loadingBuilder = new AlertDialog.Builder(getActivity());
+        View view = LayoutInflater.from(getActivity()).inflate(R.layout.loading_layout, null);
+        final LottieAnimationView lottie = view.findViewById(R.id.loadingLottie);
+        lottie.setAnimation(R.raw.lottie_delete);
+
+        loadingBuilder.setTitle(R.string.loading).setView(view);
+
+        final AlertDialog loadingDialog = loadingBuilder.create();
+        loadingDialog.show();
+
+
+        lottie.playAnimation();
+
+
+
+        lottie.addAnimatorListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                mRepository.copyDatabase();
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mRepository.deleteDatabase();
+                setAdapter();
+                loadingDialog.dismiss();
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+    }
+
     private void setCountOfWords() {
-        mActivity.getSupportActionBar().setSubtitle("Words: " + mRepository.getWords().size());
+        ((MainActivity)getActivity()).getSupportActionBar().setSubtitle(getString(R.string.word_count) + mRepository.getWords().size());
     }
 
     private void showWordDialog(Word word) {
@@ -226,22 +270,13 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
 
     private void setKey() {
 
-        if (mEditTextSearch.getText().toString().length() > 0 && mEditTextSearch.getText().toString().charAt(0) >= 97 && mEditTextSearch.getText().toString().charAt(0) <= 122) {
-            setFlag(true);
-        } else if (mEditTextSearch.getText().toString().length() > 0 && (mEditTextSearch.getText().toString().charAt(0) < 97 || mEditTextSearch.getText().toString().charAt(0) > 122)) {
+        if (mEditTextSearch.getText().toString().length() > 0 && mEditTextSearch.getText().toString().charAt(0) >= 97 && mEditTextSearch.getText().toString().charAt(0) <= 122)
+            mBooleanIsEn = true;
+         else if (mEditTextSearch.getText().toString().length() > 0 && (mEditTextSearch.getText().toString().charAt(0) < 97 || mEditTextSearch.getText().toString().charAt(0) > 122))
             mBooleanIsEn = false;
-            setFlag(false);
-        }
+
         mAdapter.setBooleanIsEn(mBooleanIsEn);
         setAdapter();
-    }
-
-    private void setFlag(boolean isEn) {
-        mBooleanIsEn = isEn;
-        if (mBooleanIsEn)
-            mImageViewFlag.setImageDrawable(mActivity.getDrawable(R.drawable.ic_us));
-        else
-            mImageViewFlag.setImageDrawable(mActivity.getDrawable(R.drawable.ic_iran));
     }
 
     @Override
@@ -261,7 +296,6 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
                 return true;
             case R.id.menuDatabaseManager:
                 item.getSubMenu().clearHeader();
-
                 if (mRepository.getWords().size() == 0)
                     item.getSubMenu().findItem(R.id.menuRemoveDatabase).setEnabled(false);
                 else
@@ -289,20 +323,20 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
         else if (wordState == WordState.UPDATE)
             title = getString(R.string.reset);
 
-        new AlertDialog.Builder(mActivity)
+        new AlertDialog.Builder(getActivity())
                 .setTitle(title)
                 .setMessage(getString(R.string.sure_delete_reset, title.toLowerCase()))
                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
-                        if (wordState == WordState.DELETE)
-                            mRepository.deleteDatabase();
-                        else if (wordState == WordState.UPDATE) {
-                            mRepository.deleteDatabase();
-                            mRepository.copyDatabase();
+                        if (wordState == WordState.DELETE) {
+                            showDeletingDialog();
                         }
-                        setAdapter();
+                        else if (wordState == WordState.UPDATE) {
+                            showLoadingDialog();
+                        }
+
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null)
@@ -337,7 +371,7 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
 
         new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.choose)
-                .setSingleChoiceItems(new String[]{getString(R.string.english), getString(R.string.persian)}, mLanguageState, new DialogInterface.OnClickListener() {
+                .setSingleChoiceItems(new String[]{getString(R.string.english), getString(R.string.persian), getString(R.string.arabic), getString(R.string.french)}, mLanguageState, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String lang = "en";
@@ -348,8 +382,14 @@ public class WordListFragment extends Fragment implements DictionaryAdapter.OnDi
                         } else if (which == 1) {
                             lang = "fa";
                             mLanguageState = 1;
+                        }else if (which == 2) {
+                            lang = "ar";
+                            mLanguageState = 2;
+                        }else if (which == 3){
+                            lang = "fr";
+                            mLanguageState = 3;
                         }
-                        Globals.saveLanguageState(getActivity(), SHARED_PREFERENCES_LANGUAGE_SELECTED_DIALOG, mLanguageState);
+                        mPreferences.edit().putInt(SHARED_PREFERENCES_LANGUAGE_SELECTED_DIALOG, mLanguageState).apply();
                         mOnWordListListener.onChangeLanguage(lang);
                     }
                 })
